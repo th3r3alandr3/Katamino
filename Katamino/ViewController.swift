@@ -44,17 +44,36 @@ public class ViewController: UIViewController {
         self.view.backgroundColor = UIColor(patternImage: UIImage(named: "background")!)
         timerLabel.text = "\(seconds)"
         createPopup()
+        let rect = CGRect(x: 20, y: (popup.bounds.height - 50) / 2, width: popup.bounds.width-40, height: 50)
+        createPopupButton(title: "Start Game", action: #selector(start), rect: rect)
     }
     
     private func createPopup(){
         popup = UIView(frame: CGRect(x: 0, y: 0, width: self.view.bounds.width, height: self.view.bounds.height))
         popup.backgroundColor = UIColor(white: 0, alpha: 0.75)
-        let button = UIButton(frame: CGRect(x: 20, y: popup.frame.height/2, width: popup.bounds.width-40, height: 50))
-        button.backgroundColor = #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1)
-        button.setTitle("Start Game", for: .normal)
-        button.addTarget(self, action: #selector(start), for: .touchUpInside)
-        popup.addSubview(button)
         self.view.addSubview(popup)
+    }
+    
+    private func createPopupButton(title: String, action: Selector, rect: CGRect){
+        let button = UIButton(frame: rect)
+        button.backgroundColor = UIColor(hue: CGFloat(arc4random_uniform(255)) / 255, saturation: 1, brightness: 1, alpha: 1)
+        button.setTitle(title, for: .normal)
+        button.addTarget(self, action: action, for: .touchUpInside)
+        popup.addSubview(button)
+    }
+    
+    private func createPopupLabel(title: String, rect: CGRect, textColor: UIColor){
+        let label = UILabel(frame: rect)
+        label.textAlignment = .center
+        label.text = title
+        label.textColor = textColor
+        popup.addSubview(label)
+    }
+    
+    private func clearPopupView() {
+        for view in popup.subviews{
+            view.removeFromSuperview()
+        }
     }
     
     public override func viewDidLayoutSubviews() {
@@ -94,12 +113,13 @@ public class ViewController: UIViewController {
     }
     
     private func playerLost(){
-        let alert = UIAlertController(title: String(format:"Player %i Lost", currentPlayer), message: "Start again?", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Cancel", style: .default, handler: nil))
-        alert.addAction(UIAlertAction(title: "Restart", style: .destructive) { _ in
-            self.resetGame()
-        })
-        self.present(alert, animated: true, completion: nil)
+        clearPopupView()
+        let buttonRect = CGRect(x: 20, y: (popup.bounds.height - 50) / 2, width: popup.bounds.width-40, height: 50)
+        createPopupButton(title: "Restart", action: #selector(restart), rect: buttonRect)
+        let labelRect = CGRect(x: 20, y: (popup.bounds.height - 50) / 2 - 100, width: popup.bounds.width-40, height: 50)
+        createPopupLabel(title: String(format:"Player %i Lost", currentPlayer), rect: labelRect, textColor: #colorLiteral(red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0))
+        self.view.addSubview(popup)
+        self.view.bringSubviewToFront(popup)
     }
     
     private func switchPlayer(){
@@ -117,6 +137,11 @@ public class ViewController: UIViewController {
         boardView.center = view.center
         placeTiles()
         startTimer()
+        popup.removeFromSuperview()
+    }
+    
+    @IBAction func restart(_ sender: Any) {
+        self.resetGame()
         popup.removeFromSuperview()
     }
     

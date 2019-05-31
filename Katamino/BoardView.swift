@@ -27,32 +27,24 @@ class BoardView: UIView {
         self.board = board
         self.fieldSize = fieldSize
         super.init(frame: board.sizeForGrid(fieldSize))
+        drawFields()
+        layer.addSublayer(highlightLayer)
+    }
+    
+    private func drawFields() {
         let gridLayer = CAShapeLayer()
         gridLayer.frame = bounds
-        gridLayer.fillColor = UIColor.white.cgColor
-        gridLayer.strokeColor = UIColor.black.cgColor
-        
-        layer.addSublayer(gridLayer)
-        gridLayer.path = boardPath()
-        layer.addSublayer(highlightLayer)
-        var switchColor = false
         let fields = getFields(occupied: false)
-        
-        for (index, field) in fields.enumerated() {
+        for field in fields {
             let originX = CGFloat(field.column) * fieldSize
             let originY = CGFloat(field.row) * fieldSize
             let rect =  CGRect(x: originX, y: originY, width: fieldSize, height: fieldSize)
             let path = UIBezierPath(rect: rect)
             let gridLayer = CAShapeLayer()
             let color = UIColor(patternImage: UIImage(named: "field")!)
-            if(switchColor) {
-                gridLayer.fillColor = color.cgColor
-            }else {
-                gridLayer.fillColor = color.cgColor
-            }
+            gridLayer.fillColor = color.cgColor
             gridLayer.strokeColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1)
             gridLayer.zPosition = 1
-            switchColor = (index + 1) % 8 == 0 ? switchColor : !switchColor
             layer.addSublayer(gridLayer)
             gridLayer.path = path.cgPath
         }

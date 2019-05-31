@@ -25,7 +25,7 @@ class TileView: UIView {
         self.tile = tile
         self.size = size
         super.init(frame:tile.sizeForGrid(size))
-        shapeLayer.strokeColor = UIColor.gray.cgColor
+        shapeLayer.strokeColor = #colorLiteral(red: 0, green: 0, blue: 0, alpha: 1).cgColor
         shapeLayer.fillColor = UIColor(hue: CGFloat(arc4random_uniform(255)) / 255, saturation: 1, brightness: 1, alpha: 1).cgColor
         shapeLayer.path = tilePath()
     }

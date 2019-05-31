@@ -33,10 +33,6 @@ public class Board: Grid {
         let width: Int
         
         public static let defaultSize = Size(height: 8, width: 8)
-        public static let SixByTen = Size(height: 6, width: 10)
-        public static let FiveByTwelve = Size(height: 5, width: 12)
-        public static let FourByFifteen = Size(height: 4, width: 15)
-        public static let ThreeByTwenty = Size(height: 3, width: 20)
     }
     
     public init(size: Size) {
