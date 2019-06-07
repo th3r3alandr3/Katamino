@@ -9,6 +9,7 @@
 import UIKit
 
 extension UIView {
+    //Extend the UIView by a function to relocate a view
     func addSubviewPreservingLocation(_ view: UIView) {
         let centered = self.convert(view.center, from: view.superview)
         self.addSubview(view)

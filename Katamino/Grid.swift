@@ -9,6 +9,7 @@
 import Foundation
 import UIKit
 
+//The grid
 public protocol Grid : CustomStringConvertible, CustomPlaygroundDisplayConvertible {
     var rows: [[Bool]] { get }
     subscript(row: Int) -> [Bool] { get }
@@ -17,12 +18,14 @@ public protocol Grid : CustomStringConvertible, CustomPlaygroundDisplayConvertib
     func fieldAt(_ point: CGPoint, fieldSize: CGFloat) -> Field
 }
 
+//Mapping
 extension Bool {
     var gridCharacter: String {
         return self ? "x" : " "
     }
 }
 
+//Create a field structure
 public struct Field {
     public let row: Int
     public let column: Int
@@ -33,23 +36,26 @@ public struct Field {
         self.column = column
         self.occupied = occupied
     }
-    
+    //Get the offset
     func offsetBy(_ field: Field) -> Field {
         return Field(row: self.row + field.row, column: self.column + field.column)
     }
 }
 
+//Substrate fields
 public prefix func -(field: Field) -> Field {
     return Field(row: -field.row, column: -field.column)
 }
 
+//Check Fields for equality
 public func ==(left: Field, right: Field) -> Bool {
     return left.row == right.row && left.column == right.column
 }
 
+//Genrate fields iterativ from Bool array
 public class GridFieldGenerator: IteratorProtocol {
-    var currentRow: Int = 0
-    var currentColumn: Int = -1
+    var row: Int = 0
+    var column: Int = -1
     
     let grid: Grid
     
@@ -58,22 +64,23 @@ public class GridFieldGenerator: IteratorProtocol {
     }
     
     public func next() -> Field? {
-        guard currentRow < grid.rows.count else { return nil }
+        guard row < grid.rows.count else { return nil }
         
-        currentColumn += 1
+        column += 1
         
-        if currentColumn == grid[currentRow].count {
-            currentColumn = 0
-            currentRow += 1
+        if column == grid[row].count {
+            column = 0
+            row += 1
         }
-        if currentRow < grid.rows.count {
-            return Field(row: currentRow, column: currentColumn, occupied: grid[currentRow][currentColumn])
+        if row < grid.rows.count {
+            return Field(row: row, column: column, occupied: grid[row][column])
         } else {
             return nil
         }
     }
 }
 
+//Sequenz to iterate grid
 public class GridFieldSequence: Sequence {
     let grid: Grid
     
@@ -86,51 +93,61 @@ public class GridFieldSequence: Sequence {
     }
 }
 
+
 extension Grid {
+    //Get all fields from grid
     public func fields() -> GridFieldSequence {
         return GridFieldSequence(grid: self)
     }
+    //Get all occupied fields from grid
     public func occupiedFields() -> [Field] {
         return fields().filter{ $0.occupied == true }
     }
+    //Get surrounding fiedls by single field
     public func fieldsSurrounding(_ field: Field) -> [Field] {
-        let firstSurroundingRow = field.row - 1
-        let firstSurroundingColumn = field.column - 1
+        let row = field.row - 1
+        let column = field.column - 1
         
         var fields = [Field]()
         for columnAdjust in 0..<3 {
             for rowAdjust in 0..<3 {
-                fields.append(Field(row: firstSurroundingRow + rowAdjust, column: firstSurroundingColumn + columnAdjust))
+                fields.append(Field(row: row + rowAdjust, column: column + columnAdjust))
             }
         }
         
         return fields
     }
     
+    //Get single row
     public subscript(row: Int) -> [Bool] {
         get {
             return rows[row]
         }
     }
     
+    //Cehck if the field is within the grid
     public func fieldWithinGrid(_ field: Field) -> Bool {
         return field.row >= 0 && field.column >= 0 && field.row < rows.count && field.column < rows[field.row].count
     }
     
+    //Check if the field is occupied
     public func fieldOccupied(_ field: Field) -> Bool {
         return self[field.row][field.column]
     }
     
+    //Return path for fields with !occupied or occupied
     public func pathForFields(_ occupied: Bool, fieldSize: CGFloat) -> CGPath {
         
         let fieldsForPath = fields().filter { $0.occupied == occupied }
         
+        //Draw rectangles from fields
         let rects : [CGRect] = fieldsForPath.map { field in
             let originX = CGFloat(field.column) * fieldSize
             let originY = CGFloat(field.row) * fieldSize
             return CGRect(x: originX, y: originY, width: fieldSize, height: fieldSize)
         }
         
+        //Get and merge path from rectangles
         let path : UIBezierPath = rects.reduce(UIBezierPath()) { path, rect in
             path.append(UIBezierPath(rect: rect))
             return path
@@ -139,6 +156,7 @@ extension Grid {
         return path.cgPath
     }
     
+    //Description is require
     public var description: String {
         let descriptions : [String] = rows.map { row in
             row.reduce("") { string, gridValue in
@@ -148,16 +166,19 @@ extension Grid {
         return descriptions.joined(separator: "\n")
     }
     
+    //Set the grid size
     public func sizeForGrid(_ size: CGFloat) -> CGRect {
         let height = CGFloat(rows.count)
         let width = CGFloat(rows.first?.count ?? 0)
         return CGRect(origin: .zero, size: CGSize(width: size * width, height: size * height))
     }
     
+    //Get origing point from field
     public func pointAtOriginOf(_ field: Field, fieldSize: CGFloat) -> CGPoint {
         return CGPoint(x: CGFloat(field.column) * fieldSize, y: CGFloat(field.row) * fieldSize)
     }
     
+    //Get field by point
     public func fieldAt(_ point: CGPoint, fieldSize: CGFloat) -> Field {
         let row = Int(floor(point.y / fieldSize))
         let column = Int(floor(point.x / fieldSize))

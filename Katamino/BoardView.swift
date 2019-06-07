@@ -31,6 +31,7 @@ class BoardView: UIView {
         layer.addSublayer(highlightLayer)
     }
     
+    //Draw every field
     private func drawFields() {
         let gridLayer = CAShapeLayer()
         gridLayer.frame = bounds
@@ -50,14 +51,17 @@ class BoardView: UIView {
         }
     }
     
+    //Get the path from Board
     private func boardPath() -> CGPath {
         return board.pathForFields(false, fieldSize: fieldSize)
     }
     
+    //Get the fiels occupied or !occupied
     func getFields(occupied: Bool) -> [Field] {
         return board.fields().filter { $0.occupied == occupied }
     }
     
+    //Required
     required public init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -66,6 +70,8 @@ class BoardView: UIView {
 
 extension BoardView {
     
+    //Getter and setter for drop path
+    //Is displayed on the board while tile is moved
     var dropPath: CGPath? {
         set {
             let origin = highlightLayer.position
@@ -80,6 +86,7 @@ extension BoardView {
         }
     }
     
+    //Function to set the drop path by location
     func showDropPathAt(_ origin: CGPoint?) {
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -94,18 +101,6 @@ extension BoardView {
 }
 
 extension BoardView {
-    public override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
-        
-        let field = board.fieldAt(point, fieldSize: fieldSize)
-        if
-            let tile = board.tileAt(field),
-            let tileView = (tileViews.filter{ $0.tile.index == tile.index}).first {
-            return tileView
-        }
-        
-        return super.hitTest(point, with: event)
-    }
-    
     var tileViews: [TileView] {
         return subviews.filter { $0 is TileView } as! [TileView]
     }
